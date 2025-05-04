@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ Панель</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #ff6a00, #ee0979);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .admin-container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            width: 300px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #32cd32;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #228b22;
+        }
+        input[type="password"] {
+            padding: 10px;
+            font-size: 18px;
+            margin: 10px 0;
+            width: 80%;
+            border-radius: 5px;
+            border: none;
+        }
+        .message {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container" id="adminContainer">
+        <h1>Админ Панель</h1>
+        <div id="loginForm">
+            <input type="password" id="password" placeholder="Введите пароль">
+            <button onclick="login()">Войти</button>
+        </div>
+        <div id="adminPanel" style="display:none;">
+            <h2>Генерация ключа</h2>
+            <button onclick="generateKey()">Генерировать обычный ключ</button>
+            <br>
+            <button onclick="generatePermanentKey()">Генерировать перманентный ключ</button>
+            <br>
+            <button onclick="resetKey()">Сбросить ключ (для вас)</button>
+            <div class="message" id="generatedKeyMessage"></div>
+            <button id="copyKeyBtn" style="display:none;" onclick="copyKey()">Скопировать ключ</button>
+            <button onclick="confirmResetKey()">Сбросить ключ для пользователя</button>
+        </div>
+    </div>
+
+    <script>
+        const adminPassword = 'tyaminomilimi.az.1234'; // Ваш новый пароль
+        let generatedKey = '';
+        let permanentKey = false;
+
+        // Функция для авторизации
+        function login() {
+            const passwordInput = document.getElementById('password').value;
+            if (passwordInput === adminPassword) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                alert('Неверный пароль!');
+            }
+        }
+
+        // Функция генерации случайного ключа
+        function generateKey() {
+            generatedKey = generateRandomKey();
+            permanentKey = false;
+            document.getElementById('generatedKeyMessage').textContent = `Ваш ключ: ${generatedKey}`;
+            document.getElementById('copyKeyBtn').style.display = 'block';
+        }
+
+        // Функция генерации перманентного ключа
+        function generatePermanentKey() {
+            generatedKey = 'PERMANENT-' + generateRandomKey();
+            permanentKey = true;
+            document.getElementById('generatedKeyMessage').textContent = `Ваш ключ: ${generatedKey}`;
+            document.getElementById('copyKeyBtn').style.display = 'block';
+        }
+
+        // Функция генерации случайного ключа
+        function generateRandomKey() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 16; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        // Функция копирования ключа
+        function copyKey() {
+            const key = generatedKey;
+            const el = document.createElement('textarea');
+            el.value = key;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert('Ключ скопирован!');
+        }
+
+        // Функция сброса ключа для админа
+        function resetKey() {
+            generatedKey = '';
+            permanentKey = false;
+            document.getElementById('generatedKeyMessage').textContent = 'Ключ сброшен!';
+            document.getElementById('copyKeyBtn').style.display = 'none';
+            alert('Ваш ключ был сброшен!');
+        }
+
+        // Подтверждение сброса ключа для пользователей
+        function confirmResetKey() {
+            const userConfirmed = confirm("Вы действительно хотите сбросить ключ?");
+            if (userConfirmed) {
+                window.location.href = 'https://yourmainwebsite.com'; // Переадресация на ваш сайт
+            }
+        }
+    </script>
+</body>
+</html>
