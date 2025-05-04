@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkpoint</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #ff6a00, #ee0979);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .checkpoint-container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #32cd32;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #228b22;
+        }
+        .message {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        #timer {
+            font-size: 18px;
+            color: #ff6347;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkpoint-container">
+        <h1>Checkpoint 2</h1>
+        <p>Процесс почти завершён! Подождите, пока мы генерируем ваш ключ.</p>
+        <button id="generateKeyBtn">Генерировать ключ</button>
+        <div class="message" id="generatedKey"></div>
+        <button id="copyKeyBtn" style="display:none;">Скопировать ключ</button>
+        <div id="timer"></div>
+        <button id="resetKeyBtn" style="margin-top: 20px;">Сбросить ключ</button>
+    </div>
+
+    <script>
+        let keyExpirationTime = 15 * 60 * 60 * 1000; // 15 часов в миллисекундах
+        let keyGenerated = false;
+        let generatedKey = '';
+        let keyTimestamp = 0;
+
+        // Проверка, есть ли сохраненный ключ
+        function checkStoredKey() {
+            const storedKey = localStorage.getItem('generatedKey');
+            const storedTimestamp = parseInt(localStorage.getItem('keyTimestamp'));
+            if (storedKey && storedTimestamp) {
+                generatedKey = storedKey;
+                keyTimestamp = storedTimestamp;
+                keyGenerated = true;
+                updateTimer();
+                document.getElementById('generatedKey').textContent = `Ваш ключ: ${generatedKey}`;
+                document.getElementById('copyKeyBtn').style.display = 'block';
+                document.getElementById('generateKeyBtn').style.display = 'none';
+                setInterval(updateTimer, 1000);
+            }
+        }
+
+        // Функция генерации ключа
+        function generateKey() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let key = '';
+            for (let i = 0; i < 16; i++) {
+                key += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return key;
+        }
+
+        // Функция обновления таймера
+        function updateTimer() {
+            const timeLeft = keyTimestamp + keyExpirationTime - Date.now();
+            if (timeLeft > 0) {
+                const hours = Math.floor(timeLeft / 1000 / 60 / 60);
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                document.getElementById('timer').textContent = `Ключ действует: ${hours}ч ${minutes}м ${seconds}с`;
+            } else {
+                document.getElementById('timer').textContent = 'Ключ истек!';
+                document.getElementById('generateKeyBtn').style.display = 'block';
+                document.getElementById('copyKeyBtn').style.display = 'none';
+                localStorage.removeItem('generatedKey'); // Удаляем ключ по истечению времени
+                localStorage.removeItem('keyTimestamp');
+            }
+        }
+
+        // Кнопка генерации ключа
+        document.getElementById('generateKeyBtn').addEventListener('click', function() {
+            if (!keyGenerated) {
+                generatedKey = generateKey();
+                keyTimestamp = Date.now(); // Время генерации ключа
+                keyGenerated = true;
+                localStorage.setItem('generatedKey', generatedKey);
+                localStorage.setItem('keyTimestamp', keyTimestamp.toString());
+                document.getElementById('generatedKey').textContent = `Ваш ключ: ${generatedKey}`;
+                document.getElementById('copyKeyBtn').style.display = 'block';
+                document.getElementById('generateKeyBtn').style.display = 'none';
+                updateTimer();
+                setInterval(updateTimer, 1000); // Обновляем таймер каждую секунду
+            }
+        });
+
+        // Кнопка копирования ключа в буфер обмена
+        document.getElementById('copyKeyBtn').addEventListener('click', function() {
+            navigator.clipboard.writeText(generatedKey).then(function() {
+                alert('Ключ скопирован в буфер обмена!');
+            }, function(err) {
+                console.error('Ошибка копирования: ', err);
+            });
+        });
+
+        // Кнопка сброса ключа
+        document.getElementById('resetKeyBtn').addEventListener('click', function() {
+            if (confirm("Вы действительно хотите сбросить ключ?")) {
+                localStorage.removeItem('generatedKey');
+                localStorage.removeItem('keyTimestamp');
+                window.location.href = "http://127.0.0.1:20478/main/0/storage/emulated/0/index.html"; // Перенаправление
+            }
+        });
+
+        // Проверяем наличие ключа при загрузке страницы
+        checkStoredKey();
+    </script>
+</body>
+</html>
